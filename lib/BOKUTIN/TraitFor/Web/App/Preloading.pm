@@ -2,6 +2,10 @@ package BOKUTIN::TraitFor::Web::App::Preloading;
 
 use Moose::Role;
 
+use Class::Load qw(load_class);
+use Module::Find;
+use IO::All;
+
 BEGIN {
     use MIME::Types;
     my $mime = MIME::Types->new;
@@ -10,10 +14,22 @@ BEGIN {
 after setup_finalize => sub {
     my $class = shift;
 
+    my $config = $class->config->{'BOKUTIN::TraitFor::Web::App::Preloading'};
+    return unless $config->{enable_preloading};
+
+    my $form_class;
+    my $container_class;
+    do {
+        my @fragments = split(/::/, $class);
+        pop @fragments;
+        $form_class = join("::", @fragments, "Form");
+        $container_class = $config->{container_class} || join("::", @fragments, "Container");
+    };
+
     {
         warn "preloading start";
 
-        my $file = File::Spec->catfile(container("config")->path_to, "PRELOADING");
+        my $file = File::Spec->catfile($class->path_to, "PRELOADING");
         if ( -f $file ) {
             my @modules = io($file)->slurp;
             @modules = map { chomp; $_ } @modules;
@@ -25,30 +41,27 @@ after setup_finalize => sub {
         }
 
         load_class($class);
+        load_class($container_class);
 
-        if (my $dtx = container('dtx')->now) {
+        if (my $dtx = eval { $container_class->get('dtx') }) {
             $dtx->now;
         }
 
-        container("email_send");
+        eval { $container_class->get("email_send") };
 
-        if (my $schema = container("schema")) {
-            if (my @source_names = $schema->sources) {
-                $schema->resultset($source_names[0])->count;
+        my $schema_container_names = $config->{schema_container_names} // ["schema"];
+        for (@$schema_container_names) {
+            if (my $schema = eval { $container_class->get($_) }) {
+                if (my @source_names = $schema->sources) {
+                    $schema->resultset($source_names[0])->count;
+                }
             }
         }
 
         warn "preloading finish.";
     }
 
-    my $form_class = do {
-        my @fragments = split(/::/, $class);
-        pop @fragments;
-        push @fragments, "Form";
-        join("::", @fragments);
-    };
-
-    my @forms = useall($form_class);
+    my @forms = Module::Find::useall($form_class);
     warn(sprintf("Number of forms %d found.", 0+@forms));
 
     my @successed_comps;
