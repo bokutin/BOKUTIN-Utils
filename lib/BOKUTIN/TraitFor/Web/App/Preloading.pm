@@ -14,7 +14,7 @@ BEGIN {
 after setup_finalize => sub {
     my $class = shift;
 
-    my $config = $class->config->{'BOKUTIN::TraitFor::Web::App::Preloading'};
+    my $config = $class->config->{__PACKAGE__.""};
     return unless $config->{enable_preloading};
 
     my $form_class;
