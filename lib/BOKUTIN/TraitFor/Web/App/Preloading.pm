@@ -36,7 +36,7 @@ after setup_finalize => sub {
             for my $pkg (@modules) {
                 next if $pkg =~ m{^File::ChangeNotify};
                 next if $pkg =~ m{^Params::Validate};
-                try { load_class($pkg) };
+                eval { load_class($pkg) };
             }
         }
 
@@ -56,6 +56,10 @@ after setup_finalize => sub {
                     $schema->resultset($source_names[0])->count;
                 }
             }
+        }
+
+        for (@{ $config->{additional_packages} // [] }) {
+            load_class($_);
         }
 
         warn "preloading finish.";

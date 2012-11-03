@@ -1,4 +1,4 @@
-package BOKUTIN::TraitFor::Web::App::Elapsed;
+package BOKUTIN::TraitFor::Web::App::ElapsedTime;
 
 use Moose::Role;
 
