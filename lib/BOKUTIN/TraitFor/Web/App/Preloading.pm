@@ -109,21 +109,3 @@ after setup_finalize => sub {
 };
 
 1;
-
-__END__
-
-=encoding utf-8
-
-=head1 NAME
-
-GalsManager::TraitFor::Web::App::Preloading - CatalystへのRoleです。fdol_web_serverのform前に、できるだけ事前にモジュールを読み込みます。Copy on writeを期待します。
-
-=head1 AUTHOR
-
-Tomohiro Hosaka E<lt>bokutin@bokut.inE<gt>
-
-=head1 LICENSE
-
-Copyright (C) 2011 Tomohiro Hosaka All Rights Reserved.
-
-=cut
