@@ -16,7 +16,7 @@ around dispatch => sub {
 
         my $elapsed = sprintf '%f', tv_interval($started, $ended);
         my $rps     = $elapsed == 0 ? '??' : sprintf '%.3f', 1/$elapsed;
-        my $label   = "${elapsed}s, $rps";
+        my $label   = "${elapsed}s, $rps/s";
 
         $c->res->body( $c->res->body =~ s/ElapsedTime/$label/r );
     }
